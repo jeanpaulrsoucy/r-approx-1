@@ -1,0 +1,48 @@
+---
+title: "r ≈ 1"
+---
+
+The following is an example from the scientific literature where *r*, the correlation coefficient, is approximately 1 (i.e., *r* ≈ 1).
+
+![Slide taken from the course BIO 4150 - Spatial Ecology, taught at the University of Ottawa by Dr. Jeremy Kerr.](kerr.png)
+
+The plot shows the individuals-area curve from a 50 ha forest plot on Barro Colorado Island, Panama. The correlation between the number of individuals and the number of hectares sampled is nearly perfect. The figure is inspired by figure 3.2 in [Hubbell (2001)](https://doi.org/10.1515/9781400837526.48).
+
+![Figure reproduced from Hubbell (2001).](hubbell_2001_fig3-2.png)
+
+It is possible to reproduce this plot for ourselves using raw data from the R package `vegan`.
+
+```{r, message = FALSE}
+# load data
+library(vegan)
+data(BCI)
+
+# preview data (first 5 hectares, first 5 species)
+BCI[1:5, 1:5]
+```
+
+```{r}
+# calculate the total number of individuals in each hectare
+rows <- rowSums(BCI)
+
+# calculate cumulative sum of individuals
+sums <- cumsum(rows)
+
+# combine data for plotting
+dat <- data.frame(1:50, sums)
+colnames(dat) <- c('hectares', 'counts')
+
+# fit model
+fit <- lm(dat$counts ~ dat$hectares)
+
+# plot
+plot(dat$counts ~ dat$hectares,
+     xlab = 'Number of hectares in sample',
+     ylab = 'Cumulative number of individuals')
+
+# add expected values
+lines(x = 1:50, y = predict(fit))
+
+# add correlation coefficient
+legend("topleft", legend = paste0("r = ", round(sqrt(summary(fit)$r.squared), 4)))
+```
